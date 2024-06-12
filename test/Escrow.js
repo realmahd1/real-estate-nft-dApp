@@ -44,4 +44,40 @@ describe('Escrow', () => {
             expect(result).to.be.equal(lender.address);
         })
     })
+
+    describe('Listing', () => {
+        const mockNfcId = 1;
+        beforeEach(async () => {
+            // Approve property
+            transaction = await realEstate.connect(seller).approve(escrow.address, mockNfcId);
+            await transaction.wait();
+
+            // List property
+            transaction = await escrow.connect(seller).list(mockNfcId, buyer.address, tokens(10), tokens(5));
+            await transaction.wait();
+        })
+        it('Updates ownership', async () => {
+            expect(await realEstate.ownerOf(mockNfcId)).to.be.equal(escrow.address);
+        })
+
+        it('Updates as listed', async () => {
+            const result = await escrow.isListed(mockNfcId);
+            expect(result).to.be.equal(true);
+        })
+
+        it('Returns buyer', async () => {
+            const result = await escrow.buyer(mockNfcId);
+            expect(result).to.be.equal(buyer.address);
+        })
+
+        it('Returns purchase price', async () => {
+            const result = await escrow.purchasePrice(mockNfcId);
+            expect(result).to.be.equal(tokens(10));
+        })
+
+        it('Returns escrow amount', async () => {
+            const result = await escrow.escrowAmount(mockNfcId);
+            expect(result).to.be.equal(tokens(5));
+        })
+    })
 })
