@@ -88,4 +88,13 @@ describe('Escrow', () => {
             expect(result).to.be.equal(tokens(5));
         })
     })
+
+    describe('Inspection', () => {
+        it('Updates inspection status', async () => {
+            const transaction = await escrow.connect(inspector).updateInspectionStatus(mockNfcId, true)
+            await transaction.wait();
+            const result = await escrow.inspectionPassed(mockNfcId);
+            expect(result).to.be.equal(true);
+        })
+    })
 })
