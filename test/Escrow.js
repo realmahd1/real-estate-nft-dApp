@@ -7,6 +7,8 @@ const tokens = (n) => {
 
 describe('Escrow', () => {
     let seller, buyer, realEstate, inspector, lender, escrow;
+    const mockNfcId = 1;
+
     beforeEach(async () => {
         [buyer, seller, inspector, lender] = await ethers.getSigners();
 
@@ -22,6 +24,13 @@ describe('Escrow', () => {
 
         escrow = await Escrow.deploy(realEstate.address, seller.address, inspector.address, lender.address);
 
+        // Approve property
+        transaction = await realEstate.connect(seller).approve(escrow.address, mockNfcId);
+        await transaction.wait();
+
+        // List property
+        transaction = await escrow.connect(seller).list(mockNfcId, buyer.address, tokens(10), tokens(5));
+        await transaction.wait();
     })
     describe('Deployment', () => {
         it('Returns NFT address', async () => {
@@ -46,16 +55,6 @@ describe('Escrow', () => {
     })
 
     describe('Listing', () => {
-        const mockNfcId = 1;
-        beforeEach(async () => {
-            // Approve property
-            transaction = await realEstate.connect(seller).approve(escrow.address, mockNfcId);
-            await transaction.wait();
-
-            // List property
-            transaction = await escrow.connect(seller).list(mockNfcId, buyer.address, tokens(10), tokens(5));
-            await transaction.wait();
-        })
         it('Updates ownership', async () => {
             expect(await realEstate.ownerOf(mockNfcId)).to.be.equal(escrow.address);
         })
@@ -77,6 +76,15 @@ describe('Escrow', () => {
 
         it('Returns escrow amount', async () => {
             const result = await escrow.escrowAmount(mockNfcId);
+            expect(result).to.be.equal(tokens(5));
+        })
+    })
+
+    describe('Deposits', () => {
+        it('Updates contract balance', async () => {
+            const transaction = await escrow.connect(buyer).depositEarnest(mockNfcId, { value: tokens(5) })
+            await transaction.wait();
+            const result = await escrow.getBalance();
             expect(result).to.be.equal(tokens(5));
         })
     })
