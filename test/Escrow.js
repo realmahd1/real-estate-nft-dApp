@@ -114,4 +114,36 @@ describe('Escrow', () => {
             expect(await escrow.approval(mockNfcId, lender.address)).to.be.equal(true);
         })
     })
+
+    describe('Sale', async () => {
+        beforeEach(async () => {
+            let transaction = await escrow.connect(buyer).depositEarnest(mockNfcId, { value: tokens(5) })
+            await transaction.wait();
+
+            transaction = await escrow.connect(inspector).updateInspectionStatus(mockNfcId, true)
+            await transaction.wait();
+
+            transaction = await escrow.connect(buyer).approveSale(mockNfcId);
+            await transaction.wait();
+
+            transaction = await escrow.connect(seller).approveSale(mockNfcId);
+            await transaction.wait();
+
+            transaction = await escrow.connect(lender).approveSale(mockNfcId);
+            await transaction.wait();
+
+            await lender.sendTransaction({ to: escrow.address, value: tokens(5) });
+
+            transaction = await escrow.connect(seller).finalizeSale(mockNfcId);
+            await transaction.wait();
+        })
+
+        it('Updates ownership', async () => {
+            expect(await realEstate.ownerOf(mockNfcId)).to.be.equal(buyer.address);
+        })
+
+        it('Updates balance', async () => {
+            expect(await escrow.getBalance()).to.be.equal(0);
+        })
+    })
 })
