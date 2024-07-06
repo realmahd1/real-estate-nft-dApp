@@ -1,5 +1,7 @@
 # Real Estate NFT DApp
 
+<img src="./public/Realestate-transaction-flow.png" alt="flow">
+
 ## Technology Stack & Tools
 
 - Solidity (Writing Smart Contracts & Tests)
