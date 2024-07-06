@@ -9,12 +9,15 @@ import RealEstate from './abis/RealEstate.json';
 
 // Config
 import config from './config.json';
+import Home from "./components/Home";
 
 function App() {
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [escrow, setEscrow] = useState(null);
   const [homes, setHomes] = useState([]);
+  const [home, setHome] = useState({})
+  const [toggle, setToggle] = useState(false)
 
   const loadBlockchainData = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -46,6 +49,11 @@ function App() {
   }, [])
 
 
+  const togglePop = (home) => {
+    setHome(home);
+    toggle ? setToggle(false) : setToggle(true);
+  }
+
   return (
     <div>
 
@@ -59,7 +67,7 @@ function App() {
 
         <div className="cards">
           {homes.map(home =>
-            <div className="card" key={home.id}>
+            <div className="card" key={home.id} onClick={() => togglePop(home)}>
               <div className="card__image">
                 <img src={home.image} alt="Home" />
               </div>
@@ -77,6 +85,9 @@ function App() {
         </div>
       </div>
 
+      {toggle && (
+        <Home home={home} escrow={escrow} provider={provider} togglePop={togglePop} />
+      )}
     </div>
   );
 }
